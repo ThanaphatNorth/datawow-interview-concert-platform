@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Design tokens (docs/01 §6, extracted from Figma exports) */
+  --primary: #2f80ed;
+  --primary-hover: #1f6fd6;
+  --brand: #1668a8;
+  --success: #12a887;
+  --danger: #f2675f;
+  --danger-hover: #e5544c;
+
+  --bg: #fafbfc;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --text: #1a202c;
+  --text-muted: #64748b;
+
+  --radius-input: 8px;
+  --radius-card: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Fluid base typography */
+body {
+  font-size: clamp(14px, 1vw + 0.5rem, 16px);
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* Toast theming (docs/01 §6: success light green) */
+.fct-toast-success {
+  background: #e6f7f2 !important;
+  color: #0a7a63 !important;
+}
+.fct-toast-error {
+  background: #fdecea !important;
+  color: #b3271e !important;
+}

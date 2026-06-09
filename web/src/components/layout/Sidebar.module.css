@@ -1,0 +1,136 @@
+/* Custom CSS Module — authenticated sidebar (docs/01 §6 "custom CSS evident").
+   Mobile-first: hidden off-canvas drawer; promoted to a fixed rail at >=1024px. */
+
+.shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  width: min(280px, 80vw);
+  padding: 1.75rem 1.25rem;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+}
+
+.sidebarOpen {
+  transform: translateX(0);
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.18);
+}
+
+.title {
+  margin: 0 0 2rem;
+  font-size: clamp(1.5rem, 1rem + 2vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+  padding: 0.625rem 0.875rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.15s ease;
+}
+
+.navItem:hover {
+  background: #f1f5f9;
+}
+
+.navItemActive {
+  background: #e8f1fd;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.menuBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.topbarTitle {
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+.content {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+}
+
+.main {
+  padding: 1.5rem 1rem 3rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Desktop: persistent sidebar, hide mobile topbar */
+@media (min-width: 1024px) {
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    transform: none;
+    box-shadow: none;
+  }
+  .backdrop,
+  .topbar {
+    display: none;
+  }
+  .main {
+    padding: 2.5rem 2rem 3rem;
+  }
+}
