@@ -130,13 +130,14 @@ Source of truth: the provided [Figma](https://www.figma.com/design/fYPlbS6c5i7tl
 
 | Token | Value (approx.) | Use |
 | --- | --- | --- |
-| `--primary` | bright blue `#2F80ED` | buttons, links, active nav, concert titles |
-| `--brand` | deep blue `#1668A8` | login left panel |
+| `--primary` | `#0070A4` | buttons, links, active nav, concert titles |
+| `--brand` | `#0070A4` | login/landing panels, admin cards, stat card |
 | `--success` | teal `#12A887` | Reserve stat card, success |
 | `--danger` | coral `#F2675F` | Cancel/Delete buttons, danger stat |
 | `--success-toast-bg` | light green | success toasts |
 | radius | ~8px inputs / ~12px cards | — |
 
+- **Font:** Roboto (loaded via `next/font/google`), per Figma.
 - **Inputs:** leading icon (person/lock), password show/hide eye toggle.
 - **Toasts:** top-right, icon + message + dismiss ✕ ("Create successfully" / "Delete successfully").
 

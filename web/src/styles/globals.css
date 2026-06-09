@@ -4,9 +4,9 @@
 
 :root {
   /* Design tokens (docs/01 §6, extracted from Figma exports) */
-  --primary: #2f80ed;
-  --primary-hover: #1f6fd6;
-  --brand: #1668a8;
+  --primary: #0070a4;
+  --primary-hover: #005a83;
+  --brand: #0070a4;
   --success: #12a887;
   --danger: #f2675f;
   --danger-hover: #e5544c;
@@ -31,7 +31,8 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-roboto), 'Roboto', system-ui, -apple-system, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
