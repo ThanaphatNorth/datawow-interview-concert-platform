@@ -24,7 +24,7 @@ export default function SelectAccessLevelPage() {
           {/* User card */}
           <article
             data-testid="access-user-card"
-            className="flex flex-col gap-5 rounded-card border border-[var(--border)] bg-white p-8 shadow-[0_12px_32px_rgba(15,23,42,0.10)]"
+            className="flex flex-col gap-5 rounded-card border border-[var(--border)] bg-white p-8 shadow-[0_8px_24px_rgba(15,23,42,0.06)]"
           >
             <span className="text-primary">
               <WorkspaceIcon width={48} height={48} />

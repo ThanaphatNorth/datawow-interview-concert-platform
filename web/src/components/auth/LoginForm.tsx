@@ -20,7 +20,16 @@ import { applyFieldErrors, handleApiError } from '@/lib/error-handler';
  * in the button label and brand tagline; auth itself is unified (POST /auth/login,
  * role derived from the JWT). `submitLabel`/`quote` carry those cosmetic differences.
  */
-export function LoginForm({ submitLabel, quote }: { submitLabel: string; quote?: string }) {
+export function LoginForm({
+  submitLabel,
+  quote,
+  showRegister = true,
+}: {
+  submitLabel: string;
+  quote?: string;
+  /** Admins are seeded (no self-registration), so the admin login hides this. */
+  showRegister?: boolean;
+}) {
   const router = useRouter();
   const { login } = useAuth();
   const mutation = useLogin();
@@ -83,12 +92,18 @@ export function LoginForm({ submitLabel, quote }: { submitLabel: string; quote?:
         <Button type="submit" loading={mutation.isPending} data-testid="login-submit">
           {submitLabel}
         </Button>
-        <p className="text-center text-sm">
-          Don&apos;t have an account?{' '}
-          <Link href="/register" data-testid="login-register-link" className="font-semibold text-primary">
-            Create an account
-          </Link>
-        </p>
+        {showRegister && (
+          <p className="text-center text-sm">
+            Don&apos;t have an account?{' '}
+            <Link
+              href="/register"
+              data-testid="login-register-link"
+              className="font-semibold text-primary"
+            >
+              Create an account
+            </Link>
+          </p>
+        )}
       </form>
     </SplitPanel>
   );

@@ -7,6 +7,7 @@ export default function AdminLoginPage() {
     <LoginForm
       submitLabel="Login as Administrator"
       quote="Powering the tools that power the team."
+      showRegister={false}
     />
   );
 }
