@@ -54,7 +54,8 @@ web/
 | Route | Render | Access | Description |
 | --- | --- | --- | --- |
 | `/` | SSR | Public | Landing page, CTA to login/register *(not in Figma — see §4.1)* |
-| `/login` | Client | Public | Email + password; "Login" button |
+| `/login` | Client | Public | User login ("Login as User"); any role may auth, JWT drives redirect |
+| `/login/admin` | Client | Public | Admin login ("Login as Administrator") — same endpoint, role-specific copy per Figma |
 | `/register` | Client | Public | Full name + email + password + confirm (USER role) |
 | `/concerts` | Client | Authenticated | List all concerts incl. fully-booked |
 | `/reservations` | Client | USER | Own reservation history + cancel *(not in Figma — see §4.3)* |
@@ -79,7 +80,7 @@ web/
 
 ### 4.3 User home (`/concerts`, USER)
 - Sidebar title "User"; nav: Home, Switch to Admin, Logout.
-- Stacked `ConcertCard`s (responsive: 1 / 2 / 3 columns): blue title, full description, seat count with person icon.
+- **Full-width `ConcertCard`s stacked one per row** (matches the Figma User home; same card layout as Admin Overview): blue title, full description, seat count with person icon.
 - Per-card action toggles by the user's state: **"Reserve"** (blue) when not reserved & seats remain; **"Cancel"** (red) when the user holds a seat; **"Sold out"** (disabled) when full. *(Sold-out state is not in Figma — design it to match; Task 4 requires showing fully-booked concerts.)*
 - Reservation/cancel use **optimistic update** → confirmed/rolled-back on error, with success toast.
 - **Personal history** (Task 4) is not a separate Figma screen — the inline Reserve/Cancel state partially covers it, but add a dedicated `/reservations` list (concert name, date, status) to fully satisfy the requirement.
