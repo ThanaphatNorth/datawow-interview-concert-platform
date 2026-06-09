@@ -53,7 +53,7 @@ web/
 
 | Route | Render | Access | Description |
 | --- | --- | --- | --- |
-| `/` | SSR | Public | Landing page, CTA to login/register *(not in Figma — see §4.1)* |
+| `/` | SSR | Public | "Select Access Level" — User/Admin role cards routing to each login (Figma; see §4.1) |
 | `/login` | Client | Public | User login ("Login as User"); any role may auth, JWT drives redirect |
 | `/login/admin` | Client | Public | Admin login ("Login as Administrator") — same endpoint, role-specific copy per Figma |
 | `/register` | Client | Public | Full name + email + password + confirm (USER role) |
@@ -68,10 +68,11 @@ web/
 
 ## 4. Key Pages & Components
 
-### 4.1 Landing page (`/`)
-- **Not present in Figma** — designs open directly on Login. Still required by Task 1 ("landing page as the main entry point").
-- Reuse the login screen's split-panel aesthetic: blue brand panel (logo + tagline "Powering the tools that power the team.") + value proposition and "Get free tickets" CTA → `/login` / `/register`.
-- Server-rendered, public, nothing role-specific.
+### 4.1 Landing page (`/`) — "Select Access Level" (Figma)
+- The Figma entry screen: white header with BRAND, centered "Select Access Level", and two role cards.
+- **User** card (white) → "Enter Workspace" → `/login`. **Administrator** card (brand blue) → "Enter Portal" → `/login/admin`.
+- This is the Task 1 main entry point. Auth stays unified — the cards just route to the role-specific login copy; the JWT role is still authoritative.
+- Server-rendered, public.
 
 ### 4.2 Auth screens (`/login`, `/register`)
 - **Split layout:** left = solid blue brand panel (BRAND logo top, large pull-quote tagline + paragraph bottom); right = the form, centered.

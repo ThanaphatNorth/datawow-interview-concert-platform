@@ -132,3 +132,35 @@ export function MenuIcon(props: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
+export function ArrowRightIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...props} aria-hidden="true">
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
+  );
+}
+
+/** User access level — a person inside a chat bubble (Figma Select Access Level). */
+export function WorkspaceIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...props} aria-hidden="true">
+      <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7A8.5 8.5 0 1 1 21 11.5z" />
+      <circle cx="12" cy="10" r="2" />
+      <path d="M8.5 15.5a3.5 3.5 0 0 1 7 0" />
+    </svg>
+  );
+}
+
+/** Administrator access level — a person with a gear (Figma Select Access Level). */
+export function AdminIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...props} aria-hidden="true">
+      <circle cx="9" cy="7" r="4" />
+      <path d="M2 21v-1a7 7 0 0 1 10.5-6.1" />
+      <circle cx="18" cy="16.5" r="2.5" />
+      <path d="M18 13v-1m0 9v-1m3-3.5-.9.5m-4.2 2.4-.9.5m6-.9-.9-.5m-4.2-2.4-.9-.5" />
+    </svg>
+  );
+}
