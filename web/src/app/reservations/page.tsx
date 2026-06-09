@@ -39,11 +39,7 @@ function ReservationsView() {
         <EmptyState
           testId="reservations-error"
           title="Couldn't load reservations"
-          action={
-            <button onClick={() => refetch()} className="font-semibold text-primary">
-              Retry
-            </button>
-          }
+          onRetry={() => refetch()}
         />
       )}
 

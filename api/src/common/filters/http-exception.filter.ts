@@ -25,6 +25,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
     let message: string | string[] = 'Internal server error';
     let error = 'Internal Server Error';
+    let fieldErrors: Record<string, string> | undefined;
 
     if (exception instanceof HttpException) {
       statusCode = exception.getStatus();
@@ -35,6 +36,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         const b = body as Record<string, unknown>;
         message = (b.message as string | string[]) ?? exception.message;
         error = (b.error as string) ?? error;
+        fieldErrors = b.fieldErrors as Record<string, string> | undefined;
       }
       // Derive a sensible `error` label when not supplied by the exception.
       if (error === 'Internal Server Error') {
@@ -48,6 +50,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       statusCode,
       error,
       message,
+      ...(fieldErrors ? { fieldErrors } : {}),
       path: request.url,
       timestamp: new Date().toISOString(),
     });

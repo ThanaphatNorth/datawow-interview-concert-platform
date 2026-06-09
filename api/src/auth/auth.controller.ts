@@ -4,7 +4,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  NotFoundException,
   Post,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -12,14 +11,10 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser, AuthUser } from './decorators/current-user.decorator';
-import { PrismaService } from '../prisma/prisma.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Public()
   @Post('register')
@@ -36,14 +31,7 @@ export class AuthController {
   }
 
   @Get('me')
-  async me(@CurrentUser() user: AuthUser) {
-    const found = await this.prisma.user.findUnique({
-      where: { id: user.id },
-      select: { id: true, name: true, email: true, role: true },
-    });
-    if (!found) {
-      throw new NotFoundException('User not found');
-    }
-    return found;
+  me(@CurrentUser() user: AuthUser) {
+    return this.authService.getProfile(user.id);
   }
 }

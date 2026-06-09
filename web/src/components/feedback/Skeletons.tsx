@@ -1,4 +1,4 @@
-export function CardSkeleton() {
+function CardSkeleton() {
   return (
     <div className="animate-pulse rounded-card border border-[var(--border)] bg-white p-6">
       <div className="mb-4 h-6 w-1/3 rounded bg-slate-200" />
@@ -29,5 +29,14 @@ export function StatsSkeleton() {
         <div key={i} className="h-32 animate-pulse rounded-card bg-slate-200" />
       ))}
     </div>
+  );
+}
+
+export function TableSkeleton() {
+  return (
+    <div
+      data-testid="history-loading"
+      className="h-40 animate-pulse rounded-card bg-slate-200"
+    />
   );
 }

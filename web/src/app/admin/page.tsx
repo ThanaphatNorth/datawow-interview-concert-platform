@@ -24,6 +24,11 @@ import type { CreateConcertInput } from '@/lib/schemas';
 
 type Tab = 'overview' | 'create';
 
+const TABS: { key: Tab; label: string; testId: string }[] = [
+  { key: 'overview', label: 'Overview', testId: 'tab-overview' },
+  { key: 'create', label: 'Create', testId: 'tab-create' },
+];
+
 function StatsRow() {
   const { data, isLoading } = useAdminStats();
   if (isLoading || !data) return <StatsSkeleton />;
@@ -79,11 +84,7 @@ function Overview() {
       <EmptyState
         testId="admin-concerts-error"
         title="Couldn't load concerts"
-        action={
-          <button onClick={() => refetch()} className="font-semibold text-primary">
-            Retry
-          </button>
-        }
+        onRetry={() => refetch()}
       />
     );
   if (!concerts || concerts.length === 0)
@@ -156,32 +157,22 @@ function AdminDashboard() {
       <StatsRow />
 
       <div className="flex gap-6 border-b border-[var(--border)]">
-        <button
-          type="button"
-          data-testid="tab-overview"
-          aria-current={tab === 'overview' ? 'page' : undefined}
-          onClick={() => setTab('overview')}
-          className={`-mb-px border-b-2 px-1 pb-3 font-semibold transition ${
-            tab === 'overview'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-[var(--text-muted)]'
-          }`}
-        >
-          Overview
-        </button>
-        <button
-          type="button"
-          data-testid="tab-create"
-          aria-current={tab === 'create' ? 'page' : undefined}
-          onClick={() => setTab('create')}
-          className={`-mb-px border-b-2 px-1 pb-3 font-semibold transition ${
-            tab === 'create'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-[var(--text-muted)]'
-          }`}
-        >
-          Create
-        </button>
+        {TABS.map(({ key, label, testId }) => (
+          <button
+            key={key}
+            type="button"
+            data-testid={testId}
+            aria-current={tab === key ? 'page' : undefined}
+            onClick={() => setTab(key)}
+            className={`-mb-px border-b-2 px-1 pb-3 font-semibold transition ${
+              tab === key
+                ? 'border-primary text-primary'
+                : 'border-transparent text-[var(--text-muted)]'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {tab === 'overview' ? <Overview /> : <Create onCreated={() => setTab('overview')} />}

@@ -7,23 +7,8 @@ interface BackendError {
   statusCode?: number;
   error?: string;
   message?: string | string[];
-}
-
-/**
- * Maps a validation message like "totalSeats must be a positive number"
- * onto a form field name when the leading word matches a known field.
- */
-const KNOWN_FIELDS = ['name', 'email', 'password', 'description', 'totalSeats'];
-
-function toFieldErrors(messages: string[]): Record<string, string> | undefined {
-  const fieldErrors: Record<string, string> = {};
-  for (const msg of messages) {
-    const firstWord = msg.trim().split(/\s+/)[0];
-    if (KNOWN_FIELDS.includes(firstWord)) {
-      fieldErrors[firstWord] = msg;
-    }
-  }
-  return Object.keys(fieldErrors).length > 0 ? fieldErrors : undefined;
+  /** Structured field->message map emitted by the API's ValidationPipe. */
+  fieldErrors?: Record<string, string>;
 }
 
 async function toApiError(res: Response): Promise<ApiError> {
@@ -35,19 +20,13 @@ async function toApiError(res: Response): Promise<ApiError> {
   }
 
   const rawMessage = body.message;
-  let message: string;
-  let fieldErrors: Record<string, string> | undefined;
+  const message = Array.isArray(rawMessage)
+    ? rawMessage[0] ?? 'Request failed'
+    : typeof rawMessage === 'string'
+      ? rawMessage
+      : body.error ?? res.statusText ?? 'Request failed';
 
-  if (Array.isArray(rawMessage)) {
-    message = rawMessage[0] ?? 'Request failed';
-    fieldErrors = res.status === 400 ? toFieldErrors(rawMessage) : undefined;
-  } else if (typeof rawMessage === 'string') {
-    message = rawMessage;
-  } else {
-    message = body.error ?? res.statusText ?? 'Request failed';
-  }
-
-  return { status: res.status, message, fieldErrors };
+  return { status: res.status, message, fieldErrors: body.fieldErrors };
 }
 
 export async function apiFetch<T>(path: string, opts?: RequestInit): Promise<T> {

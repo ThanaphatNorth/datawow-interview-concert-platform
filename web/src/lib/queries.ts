@@ -50,36 +50,32 @@ export function useRegister() {
 
 // --- Concert queries ---
 
-export function useConcerts(enabled = true): UseQueryResult<Concert[]> {
+export function useConcerts(): UseQueryResult<Concert[]> {
   return useQuery({
     queryKey: queryKeys.concerts,
     queryFn: () => apiFetch<Concert[]>('/concerts'),
-    enabled,
   });
 }
 
-export function useMyReservations(enabled = true): UseQueryResult<Reservation[]> {
+export function useMyReservations(): UseQueryResult<Reservation[]> {
   return useQuery({
     queryKey: queryKeys.myReservations,
     queryFn: () => apiFetch<Reservation[]>('/reservations/me'),
-    enabled,
   });
 }
 
-export function useAdminStats(enabled = true): UseQueryResult<AdminStats> {
+export function useAdminStats(): UseQueryResult<AdminStats> {
   return useQuery({
     queryKey: queryKeys.adminStats,
     queryFn: () => apiFetch<AdminStats>('/admin/stats'),
-    enabled,
   });
 }
 
-export function useAdminEvents(enabled = true): UseQueryResult<AdminEventsResponse> {
+export function useAdminEvents(): UseQueryResult<AdminEventsResponse> {
   return useQuery({
     queryKey: queryKeys.adminEvents,
     queryFn: () =>
       apiFetch<AdminEventsResponse>('/admin/reservations?page=1&pageSize=100'),
-    enabled,
   });
 }
 

@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { createConcertSchema, type CreateConcertInput } from '@/lib/schemas';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
 import { PersonIcon, SaveIcon } from '@/components/ui/icons';
 import { Card } from '@/components/ui/Card';
 
@@ -55,29 +56,13 @@ export function ConcertForm({ onSubmit, submitting = false, serverFieldErrors }:
           />
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="concert-description-input" className="text-base font-medium">
-            Description
-          </label>
-          <textarea
-            id="concert-description-input"
-            data-testid="concert-description-input"
-            rows={4}
-            placeholder="Please input description"
-            aria-invalid={!!errors.description}
-            className={`w-full rounded-input border bg-white px-3 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 ${
-              errors.description || serverFieldErrors?.description
-                ? 'border-danger'
-                : 'border-slate-300'
-            }`}
-            {...register('description')}
-          />
-          {(errors.description?.message || serverFieldErrors?.description) && (
-            <p data-testid="concert-description-input-error" className="text-sm text-danger">
-              {errors.description?.message ?? serverFieldErrors?.description}
-            </p>
-          )}
-        </div>
+        <Textarea
+          label="Description"
+          testId="concert-description-input"
+          placeholder="Please input description"
+          error={errors.description?.message ?? serverFieldErrors?.description}
+          {...register('description')}
+        />
 
         <div className="flex justify-end">
           <Button type="submit" loading={submitting} data-testid="concert-save-btn">

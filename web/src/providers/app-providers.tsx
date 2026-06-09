@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { AuthContext, type AuthContextValue } from './auth-context';
 import type { AuthUser } from '@/lib/types';
-import { clearSession, getStoredUser, getToken, storeSession } from '@/lib/auth';
+import { clearSession, getStoredUser, getToken, storeSession, TOKEN_KEY } from '@/lib/auth';
 
 function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -21,7 +21,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
 
     // Cross-tab logout sync.
     const onStorage = (e: StorageEvent) => {
-      if (e.key === 'fct_token' && !e.newValue) {
+      if (e.key === TOKEN_KEY && !e.newValue) {
         setUser(null);
       }
     };

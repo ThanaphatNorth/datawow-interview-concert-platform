@@ -13,7 +13,7 @@ import { registerSchema, type RegisterInput } from '@/lib/schemas';
 import { useRegister } from '@/lib/queries';
 import { useAuth } from '@/lib/auth';
 import { isApiError } from '@/lib/api-client';
-import { handleApiError } from '@/lib/error-handler';
+import { applyFieldErrors, handleApiError } from '@/lib/error-handler';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -39,11 +39,7 @@ export default function RegisterPage() {
       onError: (err) => {
         if (isApiError(err) && err.status === 409) {
           setError('email', { message: 'Email already registered' });
-        } else if (isApiError(err) && err.fieldErrors) {
-          Object.entries(err.fieldErrors).forEach(([field, message]) =>
-            setError(field as keyof RegisterInput, { message }),
-          );
-        } else {
+        } else if (!applyFieldErrors(err, setError)) {
           handleApiError(err, 'Registration failed');
         }
       },

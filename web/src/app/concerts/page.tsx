@@ -60,11 +60,7 @@ function ConcertsView() {
           testId="concerts-error"
           title="Couldn't load concerts"
           description="Please try again."
-          action={
-            <button onClick={() => refetch()} className="font-semibold text-primary">
-              Retry
-            </button>
-          }
+          onRetry={() => refetch()}
         />
       )}
 

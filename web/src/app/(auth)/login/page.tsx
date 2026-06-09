@@ -13,7 +13,7 @@ import { loginSchema, type LoginInput } from '@/lib/schemas';
 import { useLogin } from '@/lib/queries';
 import { useAuth } from '@/lib/auth';
 import { isApiError } from '@/lib/api-client';
-import { handleApiError } from '@/lib/error-handler';
+import { applyFieldErrors, handleApiError } from '@/lib/error-handler';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -39,11 +39,7 @@ export default function LoginPage() {
       onError: (err) => {
         if (isApiError(err) && err.status === 401) {
           setError('password', { message: 'Invalid email or password' });
-        } else if (isApiError(err) && err.fieldErrors) {
-          Object.entries(err.fieldErrors).forEach(([field, message]) =>
-            setError(field as keyof LoginInput, { message }),
-          );
-        } else {
+        } else if (!applyFieldErrors(err, setError)) {
           handleApiError(err, 'Login failed');
         }
       },

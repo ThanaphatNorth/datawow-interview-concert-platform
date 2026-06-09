@@ -4,11 +4,14 @@ export function EmptyState({
   title,
   description,
   action,
+  onRetry,
   testId,
 }: {
   title: string;
   description?: string;
   action?: ReactNode;
+  /** When set, renders a standard "Retry" button (used by all data-page error states). */
+  onRetry?: () => void;
   testId?: string;
 }) {
   return (
@@ -18,6 +21,11 @@ export function EmptyState({
     >
       <p className="text-lg font-semibold text-[var(--text)]">{title}</p>
       {description && <p className="max-w-sm text-sm text-[var(--text-muted)]">{description}</p>}
+      {onRetry && (
+        <button onClick={onRetry} className="mt-2 font-semibold text-primary">
+          Retry
+        </button>
+      )}
       {action && <div className="mt-2">{action}</div>}
     </div>
   );
