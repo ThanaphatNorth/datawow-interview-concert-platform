@@ -2,6 +2,9 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
+# Prisma engines need OpenSSL (not bundled in alpine).
+RUN apk add --no-cache openssl
+
 # Install dependencies (cache-friendly).
 COPY package.json package-lock.json* ./
 RUN npm install
@@ -21,6 +24,9 @@ RUN npm prune --omit=dev
 FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+
+# Prisma migrate/query engines need OpenSSL at runtime.
+RUN apk add --no-cache openssl
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
