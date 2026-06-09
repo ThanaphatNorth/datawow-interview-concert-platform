@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ReservationStatus {
+  ACTIVE
+  CANCELLED
+}
+
+enum ReservationAction {
+  RESERVE
+  CANCEL
+}
+
+model User {
+  id           String             @id @default(uuid())
+  email        String             @unique
+  name         String
+  passwordHash String
+  role         Role               @default(USER)
+  reservations Reservation[]
+  events       ReservationEvent[]
+  createdAt    DateTime           @default(now())
+}
+
+model Concert {
+  id            String             @id @default(uuid())
+  name          String
+  description   String
+  totalSeats    Int
+  reservedSeats Int                @default(0)
+  reservations  Reservation[]
+  events        ReservationEvent[]
+  createdAt     DateTime           @default(now())
+}
+
+model Reservation {
+  id          String            @id @default(uuid())
+  userId      String
+  concertId   String
+  status      ReservationStatus @default(ACTIVE)
+  createdAt   DateTime          @default(now())
+  cancelledAt DateTime?
+
+  user    User    @relation(fields: [userId], references: [id])
+  concert Concert @relation(fields: [concertId], references: [id])
+
+  @@index([concertId])
+  @@index([userId])
+}
+
+model ReservationEvent {
+  id        String            @id @default(uuid())
+  userId    String
+  concertId String
+  action    ReservationAction
+  createdAt DateTime          @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  concert Concert @relation(fields: [concertId], references: [id])
+
+  @@index([concertId])
+  @@index([createdAt])
+}
