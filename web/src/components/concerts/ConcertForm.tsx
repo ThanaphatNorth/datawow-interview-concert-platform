@@ -50,7 +50,7 @@ export function ConcertForm({ onSubmit, submitting = false, serverFieldErrors }:
             type="number"
             min={1}
             placeholder="500"
-            leadingIcon={<PersonIcon />}
+            trailingIcon={<PersonIcon />}
             error={errors.totalSeats?.message ?? serverFieldErrors?.totalSeats}
             {...register('totalSeats')}
           />

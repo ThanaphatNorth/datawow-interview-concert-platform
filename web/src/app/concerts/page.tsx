@@ -73,7 +73,7 @@ function ConcertsView() {
       )}
 
       {!isLoading && !isError && concerts && concerts.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col gap-4">
           {concerts.map((concert) => (
             <ConcertCard
               key={concert.id}

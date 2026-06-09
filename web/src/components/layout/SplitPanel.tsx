@@ -1,7 +1,13 @@
 import type { ReactNode } from 'react';
 import styles from './SplitPanel.module.css';
 
-export function SplitPanel({ children }: { children: ReactNode }) {
+export function SplitPanel({
+  children,
+  quote = 'Powering the tools that power the team.',
+}: {
+  children: ReactNode;
+  quote?: string;
+}) {
   return (
     <div className={styles.wrap}>
       <section className={styles.brand}>
@@ -10,7 +16,7 @@ export function SplitPanel({ children }: { children: ReactNode }) {
           BRAND
         </div>
         <div>
-          <p className={styles.quote}>&ldquo;Powering the tools that power the team.&rdquo;</p>
+          <p className={styles.quote}>&ldquo;{quote}&rdquo;</p>
           <p className={styles.copy}>
             Lorem ipsum dolor sit amet consectetur. Elit purus nam gravida porttitor nibh urna sit
             ornare a. Proin dolor morbi id ornare aenean.

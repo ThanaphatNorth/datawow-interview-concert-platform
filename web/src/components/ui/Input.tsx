@@ -7,18 +7,21 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   error?: string;
   leadingIcon?: ReactNode;
+  /** Decorative icon pinned to the right edge (ignored when passwordToggle is set). */
+  trailingIcon?: ReactNode;
   /** When true, renders a show/hide eye toggle and a password input. */
   passwordToggle?: boolean;
   testId: string;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
-  { label, error, leadingIcon, passwordToggle, testId, type = 'text', id, ...rest },
+  { label, error, leadingIcon, trailingIcon, passwordToggle, testId, type = 'text', id, ...rest },
   ref,
 ) {
   const [show, setShow] = useState(false);
   const inputId = id ?? testId;
   const resolvedType = passwordToggle ? (show ? 'text' : 'password') : type;
+  const hasTrailing = passwordToggle || !!trailingIcon;
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -40,9 +43,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           aria-describedby={error ? `${inputId}-error` : undefined}
           className={`min-h-[44px] w-full rounded-input border bg-white px-3 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 ${
             leadingIcon ? 'pl-10' : ''
-          } ${passwordToggle ? 'pr-10' : ''} ${error ? 'border-danger' : 'border-slate-300'}`}
+          } ${hasTrailing ? 'pr-10' : ''} ${error ? 'border-danger' : 'border-slate-300'}`}
           {...rest}
         />
+        {trailingIcon && !passwordToggle && (
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">
+            {trailingIcon}
+          </span>
+        )}
         {passwordToggle && (
           <button
             type="button"
