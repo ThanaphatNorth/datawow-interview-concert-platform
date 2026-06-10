@@ -61,16 +61,18 @@ describe('RegisterPage password match', () => {
 
     await userEvent.type(screen.getByTestId('signup-name'), 'Sara John');
     await userEvent.type(screen.getByTestId('signup-email'), 'sara@example.com');
-    await userEvent.type(screen.getByTestId('signup-password'), 'password123');
-    await userEvent.type(screen.getByTestId('signup-confirm-password'), 'password123');
+    // Must satisfy the password policy (upper + lower + digit), or the form
+    // blocks submit before reaching the mutation.
+    await userEvent.type(screen.getByTestId('signup-password'), 'Password123');
+    await userEvent.type(screen.getByTestId('signup-confirm-password'), 'Password123');
     await userEvent.click(screen.getByTestId('signup-submit'));
 
     expect(mockMutate).toHaveBeenCalledTimes(1);
     expect(mockMutate.mock.calls[0][0]).toMatchObject({
       name: 'Sara John',
       email: 'sara@example.com',
-      password: 'password123',
-      confirmPassword: 'password123',
+      password: 'Password123',
+      confirmPassword: 'Password123',
     });
   });
 });

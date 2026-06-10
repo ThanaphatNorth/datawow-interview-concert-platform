@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -15,7 +16,13 @@ const SALT_ROUNDS = 10;
 
 export interface AuthResult {
   accessToken: string;
-  user: { id: string; name: string; email: string; role: string };
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    mustChangePassword: boolean;
+  };
 }
 
 @Injectable()
@@ -56,12 +63,53 @@ export class AuthService {
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, name: true, email: true, role: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        mustChangePassword: true,
+      },
     });
     if (!user) {
       throw new NotFoundException('User not found');
     }
     return user;
+  }
+
+  /**
+   * First-login password change: the user is already authenticated (JWT), so we
+   * trust the token rather than asking for the current password. Sets the new
+   * hash and clears the must-change flag in one update.
+   */
+  async changePassword(userId: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    // Reject reusing the current password. Carry a field error so the client can
+    // attach it to the newPassword input (matches the ValidationPipe error shape).
+    if (await bcrypt.compare(newPassword, user.passwordHash)) {
+      throw new BadRequestException({
+        error: 'Bad Request',
+        message: ['New password must be different from the current password'],
+        fieldErrors: {
+          newPassword: 'New password must be different from the current password',
+        },
+      });
+    }
+    const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash, mustChangePassword: false },
+    });
+    return {
+      id: updated.id,
+      name: updated.name,
+      email: updated.email,
+      role: updated.role,
+      mustChangePassword: updated.mustChangePassword,
+    };
   }
 
   private buildAuthResult(user: User): AuthResult {
@@ -77,6 +125,7 @@ export class AuthService {
         name: user.name,
         email: user.email,
         role: user.role,
+        mustChangePassword: user.mustChangePassword,
       },
     };
   }

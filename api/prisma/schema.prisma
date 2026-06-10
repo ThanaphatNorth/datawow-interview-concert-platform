@@ -29,6 +29,9 @@ model User {
   name         String
   passwordHash String
   role         Role               @default(USER)
+  // Provisioned admins start with a temporary password and must set their own
+  // on first login. The bootstrap/seed demo admin is exempt (already onboarded).
+  mustChangePassword Boolean       @default(false)
   reservations Reservation[]
   events       ReservationEvent[]
   createdAt    DateTime           @default(now())
