@@ -9,6 +9,7 @@ import {
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser, AuthUser } from './decorators/current-user.decorator';
 
@@ -33,5 +34,15 @@ export class AuthController {
   @Get('me')
   me(@CurrentUser() user: AuthUser) {
     return this.authService.getProfile(user.id);
+  }
+
+  // Authenticated (no @Public): the JWT identifies who is changing their password.
+  @Post('change-password')
+  @HttpCode(HttpStatus.OK)
+  changePassword(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    return this.authService.changePassword(user.id, dto.newPassword);
   }
 }

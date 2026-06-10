@@ -10,17 +10,26 @@ import { apiFetch } from './api-client';
 import type {
   AdminEventsResponse,
   AdminStats,
+  AdminUser,
   AuthResponse,
+  AuthUser,
   Concert,
   Reservation,
 } from './types';
-import type { CreateConcertInput, LoginInput, RegisterInput } from './schemas';
+import type {
+  ChangePasswordInput,
+  CreateAdminInput,
+  CreateConcertInput,
+  LoginInput,
+  RegisterInput,
+} from './schemas';
 
 export const queryKeys = {
   concerts: ['concerts'] as const,
   myReservations: ['reservations', 'me'] as const,
   adminEvents: ['admin', 'events'] as const,
   adminStats: ['admin', 'stats'] as const,
+  adminUsers: ['admin', 'users'] as const,
 };
 
 // --- Auth mutations ---
@@ -45,6 +54,17 @@ export function useRegister() {
         body: JSON.stringify({ name, email, password }),
       });
     },
+  });
+}
+
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: (input: ChangePasswordInput) =>
+      // confirmPassword is client-only and must not be sent.
+      apiFetch<AuthUser>('/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({ newPassword: input.newPassword }),
+      }),
   });
 }
 
@@ -182,6 +202,40 @@ export function useDeleteConcert() {
       apiFetch(`/concerts/${concertId}`, { method: 'DELETE' }),
     onSuccess: () => {
       invalidateAll(qc);
+    },
+  });
+}
+
+// --- Admin user management ---
+
+export function useAdminUsers(): UseQueryResult<AdminUser[]> {
+  return useQuery({
+    queryKey: queryKeys.adminUsers,
+    queryFn: () => apiFetch<AdminUser[]>('/admin/users'),
+  });
+}
+
+export function useCreateAdmin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateAdminInput) =>
+      apiFetch<AdminUser>('/admin/users', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.adminUsers });
+    },
+  });
+}
+
+export function useDeleteAdmin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) =>
+      apiFetch(`/admin/users/${userId}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.adminUsers });
     },
   });
 }

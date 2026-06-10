@@ -1,6 +1,11 @@
 import { Test } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
-import { ConflictException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
@@ -8,11 +13,17 @@ import { PrismaService } from '../prisma/prisma.service';
 
 describe('AuthService', () => {
   let service: AuthService;
-  let prisma: { user: { create: jest.Mock; findUnique: jest.Mock } };
+  let prisma: {
+    user: {
+      create: jest.Mock;
+      findUnique: jest.Mock;
+      update: jest.Mock;
+    };
+  };
   let jwt: { sign: jest.Mock };
 
   beforeEach(async () => {
-    prisma = { user: { create: jest.fn(), findUnique: jest.fn() } };
+    prisma = { user: { create: jest.fn(), findUnique: jest.fn(), update: jest.fn() } };
     jwt = { sign: jest.fn().mockReturnValue('signed.jwt.token') };
 
     const moduleRef = await Test.createTestingModule({
@@ -34,6 +45,7 @@ describe('AuthService', () => {
         name: data.name,
         passwordHash: data.passwordHash,
         role: Role.USER,
+        mustChangePassword: false,
       }));
 
       const result = await service.register({
@@ -59,6 +71,7 @@ describe('AuthService', () => {
         name: 'Sara John',
         email: 'user@example.com',
         role: Role.USER,
+        mustChangePassword: false,
       });
     });
 
@@ -89,6 +102,7 @@ describe('AuthService', () => {
         name: 'Admin',
         passwordHash,
         role: Role.ADMIN,
+        mustChangePassword: true,
       });
 
       const result = await service.login({
@@ -100,6 +114,8 @@ describe('AuthService', () => {
         expect.objectContaining({ role: Role.ADMIN }),
       );
       expect(result.user.role).toBe(Role.ADMIN);
+      // The flag flows through so the client can force a first-login change.
+      expect(result.user.mustChangePassword).toBe(true);
     });
 
     it('throws 401 for wrong password', async () => {
@@ -122,6 +138,87 @@ describe('AuthService', () => {
       await expect(
         service.login({ email: 'nobody@example.com', password: 'whatever1' }),
       ).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+  });
+
+  describe('getProfile', () => {
+    it('returns the safe profile fields (never the password hash)', async () => {
+      const profile = {
+        id: 'u1',
+        name: 'Sara',
+        email: 'sara@example.com',
+        role: Role.USER,
+      };
+      prisma.user.findUnique.mockResolvedValue(profile);
+
+      const result = await service.getProfile('u1');
+
+      expect(result).toEqual(profile);
+      // The select must exclude passwordHash.
+      const selectArg = prisma.user.findUnique.mock.calls[0][0].select;
+      expect(selectArg).not.toHaveProperty('passwordHash');
+    });
+
+    it('throws 404 when the user no longer exists', async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+      await expect(service.getProfile('ghost')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+  });
+
+  describe('changePassword', () => {
+    it('hashes the new password and clears the must-change flag', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'a1',
+        email: 'new-admin@example.com',
+        name: 'New Admin',
+        passwordHash: 'old-hash',
+        role: Role.ADMIN,
+        mustChangePassword: true,
+      });
+      prisma.user.update.mockImplementation(async ({ data }) => ({
+        id: 'a1',
+        email: 'new-admin@example.com',
+        name: 'New Admin',
+        passwordHash: data.passwordHash,
+        role: Role.ADMIN,
+        mustChangePassword: data.mustChangePassword,
+      }));
+
+      const result = await service.changePassword('a1', 'BrandNew123');
+
+      const updateArg = prisma.user.update.mock.calls[0][0];
+      expect(updateArg.where).toEqual({ id: 'a1' });
+      expect(updateArg.data.mustChangePassword).toBe(false);
+      // New password is hashed, never stored as plaintext.
+      expect(updateArg.data.passwordHash).not.toBe('BrandNew123');
+      expect(await bcrypt.compare('BrandNew123', updateArg.data.passwordHash)).toBe(true);
+      expect(result.mustChangePassword).toBe(false);
+    });
+
+    it('rejects reusing the current password (never touches the DB)', async () => {
+      const passwordHash = await bcrypt.hash('Password123', 10);
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'a1',
+        email: 'new-admin@example.com',
+        name: 'New Admin',
+        passwordHash,
+        role: Role.ADMIN,
+        mustChangePassword: true,
+      });
+
+      await expect(
+        service.changePassword('a1', 'Password123'),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.user.update).not.toHaveBeenCalled();
+    });
+
+    it('throws 404 when the user no longer exists', async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+      await expect(
+        service.changePassword('ghost', 'BrandNew123'),
+      ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 });

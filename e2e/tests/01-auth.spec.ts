@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { freshUser, SEED_USER } from './helpers/api';
+import { freshUser, SEED_USER, SEED_ADMIN } from './helpers/api';
 
 /**
  * User story: register/login + auth validation.
@@ -8,6 +8,8 @@ import { freshUser, SEED_USER } from './helpers/api';
  *  - Login as that user -> reaches /concerts.
  *  - Password mismatch shows signup-confirm-password-error inline.
  *  - Bad credentials show auth-error.
+ *  - The administrator login (/login/admin) rejects non-admin accounts and only
+ *    lets a real ADMIN through to /admin.
  */
 test.describe('auth', () => {
   test('register a new user redirects to user home, then login works', async ({ page }) => {
@@ -57,5 +59,33 @@ test.describe('auth', () => {
 
     await expect(page.getByTestId('auth-error')).toBeVisible();
     await expect(page).toHaveURL(/\/login/);
+  });
+
+  test('admin login rejects a non-admin account (no session, stays on /login/admin)', async ({
+    page,
+  }) => {
+    // A valid USER account using the administrator login: credentials are correct,
+    // but the role isn't ADMIN, so we reject without establishing a session.
+    await page.goto('/login/admin');
+    await page.getByTestId('login-email').fill(SEED_USER.email);
+    await page.getByTestId('login-password').fill(SEED_USER.password);
+    await page.getByTestId('login-submit').click();
+
+    await expect(page.getByTestId('auth-error')).toContainText(/administrator access/i);
+    // No redirect into either portal — still on the admin login.
+    await expect(page).toHaveURL(/\/login\/admin/);
+
+    // And no session was stored, so a protected page bounces back to /login.
+    await page.goto('/admin');
+    await expect(page).toHaveURL(/\/login/);
+  });
+
+  test('admin login lets a real ADMIN through to /admin', async ({ page }) => {
+    await page.goto('/login/admin');
+    await page.getByTestId('login-email').fill(SEED_ADMIN.email);
+    await page.getByTestId('login-password').fill(SEED_ADMIN.password);
+    await page.getByTestId('login-submit').click();
+
+    await expect(page).toHaveURL(/\/admin/);
   });
 });

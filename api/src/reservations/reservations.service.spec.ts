@@ -197,4 +197,68 @@ describe('ReservationsService', () => {
       });
     });
   });
+
+  describe('findMine', () => {
+    it("returns the user's own reservations newest-first, scoped by userId", async () => {
+      const rows = [
+        {
+          id: 'r2',
+          status: ReservationStatus.ACTIVE,
+          createdAt: new Date(),
+          cancelledAt: null,
+          concert: { id: 'c2', name: 'B' },
+        },
+        {
+          id: 'r1',
+          status: ReservationStatus.CANCELLED,
+          createdAt: new Date(),
+          cancelledAt: new Date(),
+          concert: { id: 'c1', name: 'A' },
+        },
+      ];
+      prisma.reservation.findMany.mockResolvedValue(rows);
+
+      const result = await service.findMine('u1');
+
+      expect(result).toBe(rows);
+      expect(prisma.reservation.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { userId: 'u1' },
+          orderBy: { createdAt: 'desc' },
+        }),
+      );
+    });
+  });
+
+  describe('findAllEvents', () => {
+    it('defaults to page 1 / pageSize 20 with an empty filter', async () => {
+      prisma.$transaction.mockResolvedValue([[], 0]);
+
+      const result = await service.findAllEvents({});
+
+      expect(result).toEqual({ data: [], page: 1, pageSize: 20, total: 0 });
+      const findManyArg = prisma.reservationEvent.findMany.mock.calls[0][0];
+      expect(findManyArg).toMatchObject({ skip: 0, take: 20, where: {} });
+    });
+
+    it('applies concertId + action filters and derives skip from the page', async () => {
+      const rows = [{ id: 'e1', action: ReservationAction.RESERVE }];
+      prisma.$transaction.mockResolvedValue([rows, 42]);
+
+      const result = await service.findAllEvents({
+        page: 3,
+        pageSize: 10,
+        concertId: 'c1',
+        action: ReservationAction.RESERVE,
+      });
+
+      expect(result).toEqual({ data: rows, page: 3, pageSize: 10, total: 42 });
+      const findManyArg = prisma.reservationEvent.findMany.mock.calls[0][0];
+      expect(findManyArg).toMatchObject({
+        skip: 20, // (3 - 1) * 10
+        take: 10,
+        where: { concertId: 'c1', action: ReservationAction.RESERVE },
+      });
+    });
+  });
 });

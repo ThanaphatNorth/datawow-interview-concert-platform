@@ -39,6 +39,11 @@ function AuthProvider({ children }: { children: ReactNode }) {
         storeSession(token, nextUser);
         setUser(nextUser);
       },
+      updateUser: (nextUser) => {
+        const token = getToken();
+        if (token) storeSession(token, nextUser);
+        setUser(nextUser);
+      },
       logout: () => {
         clearSession();
         setUser(null);

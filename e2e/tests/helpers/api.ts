@@ -3,6 +3,8 @@ import { API_BASE_URL } from '../../playwright.config';
 
 export const SEED_ADMIN = { email: 'admin@example.com', password: 'Password123' };
 export const SEED_USER = { email: 'user@example.com', password: 'Password123' };
+// Freshly provisioned admin: seeded with mustChangePassword=true (reset on each seed).
+export const SEED_NEW_ADMIN = { email: 'new-admin@example.com', password: 'Password123' };
 
 export type AuthResult = {
   accessToken: string;
@@ -114,6 +116,13 @@ export class ApiClient {
     });
   }
 
+  /** Raw cancel call so specs can assert status codes (200 / 403 / 404). */
+  async cancel(token: string, reservationId: string) {
+    return this.ctx.delete(`/reservations/${reservationId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  }
+
   async listConcerts(token: string): Promise<Concert[]> {
     const res = await this.ctx.get('/concerts', {
       headers: { Authorization: `Bearer ${token}` },
@@ -132,5 +141,13 @@ export class ApiClient {
   /** Raw call against any admin endpoint to assert role enforcement. */
   async rawGet(path: string, token: string) {
     return this.ctx.get(path, { headers: { Authorization: `Bearer ${token}` } });
+  }
+
+  /** Raw POST so specs can assert status codes (e.g. 403 for a USER token). */
+  async rawPost(path: string, token: string, data: unknown) {
+    return this.ctx.post(path, {
+      headers: { Authorization: `Bearer ${token}` },
+      data,
+    });
   }
 }

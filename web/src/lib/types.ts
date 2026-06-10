@@ -5,11 +5,22 @@ export interface AuthUser {
   name: string;
   email: string;
   role: Role;
+  /** Provisioned admins must set their own password on first login. */
+  mustChangePassword: boolean;
 }
 
 export interface AuthResponse {
   accessToken: string;
   user: AuthUser;
+}
+
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  mustChangePassword: boolean;
+  createdAt: string;
 }
 
 export interface Concert {
