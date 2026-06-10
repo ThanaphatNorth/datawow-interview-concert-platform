@@ -137,21 +137,16 @@ function AdminsTable({
                   {admin.email}
                 </td>
                 <td className="px-4 py-3">
-                  {admin.mustChangePassword ? (
-                    <span
-                      data-testid="admin-row-status"
-                      className="inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700"
-                    >
-                      Must change password
-                    </span>
-                  ) : (
-                    <span
-                      data-testid="admin-row-status"
-                      className="inline-block rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700"
-                    >
-                      Active
-                    </span>
-                  )}
+                  <span
+                    data-testid="admin-row-status"
+                    className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                      admin.mustChangePassword
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-emerald-100 text-emerald-700'
+                    }`}
+                  >
+                    {admin.mustChangePassword ? 'Must change password' : 'Active'}
+                  </span>
                 </td>
                 <td className="px-4 py-3 text-[var(--text-muted)]">
                   {formatDateTime(admin.createdAt)}

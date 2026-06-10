@@ -1,5 +1,14 @@
 import { z } from 'zod';
 
+// Shared password policy: at least 8 chars with a lowercase, uppercase, and number.
+const passwordField = z
+  .string()
+  .min(8, 'At least 8 characters')
+  .regex(
+    /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+    'Include an uppercase letter, a lowercase letter, and a number',
+  );
+
 export const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Enter a valid email'),
   password: z.string().min(1, 'Password is required'),
@@ -9,13 +18,7 @@ export const registerSchema = z
   .object({
     name: z.string().min(1, 'Full name is required'),
     email: z.string().min(1, 'Email is required').email('Enter a valid email'),
-    password: z
-      .string()
-      .min(8, 'At least 8 characters')
-      .regex(
-        /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        'Include an uppercase letter, a lowercase letter, and a number',
-      ),
+    password: passwordField,
     confirmPassword: z.string().min(1, 'Please confirm your password'),
   })
   .refine((d) => d.password === d.confirmPassword, {
@@ -26,13 +29,7 @@ export const registerSchema = z
 
 export const changePasswordSchema = z
   .object({
-    newPassword: z
-      .string()
-      .min(8, 'At least 8 characters')
-      .regex(
-        /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        'Include an uppercase letter, a lowercase letter, and a number',
-      ),
+    newPassword: passwordField,
     confirmPassword: z.string().min(1, 'Please confirm your password'),
   })
   .refine((d) => d.newPassword === d.confirmPassword, {

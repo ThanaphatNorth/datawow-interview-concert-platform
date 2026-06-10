@@ -1,18 +1,16 @@
 import {
   BadRequestException,
-  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
+import { hashPassword, rethrowDuplicateEmail } from '../common/password';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-
-const SALT_ROUNDS = 10;
 
 export interface AuthResult {
   accessToken: string;
@@ -33,20 +31,14 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto): Promise<AuthResult> {
-    const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
+    const passwordHash = await hashPassword(dto.password);
     try {
       const user = await this.prisma.user.create({
         data: { name: dto.name, email: dto.email, passwordHash },
       });
       return this.buildAuthResult(user);
     } catch (e) {
-      if (
-        e instanceof Prisma.PrismaClientKnownRequestError &&
-        e.code === 'P2002'
-      ) {
-        throw new ConflictException('Email already registered');
-      }
-      throw e;
+      rethrowDuplicateEmail(e);
     }
   }
 
@@ -98,7 +90,7 @@ export class AuthService {
         },
       });
     }
-    const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    const passwordHash = await hashPassword(newPassword);
     const updated = await this.prisma.user.update({
       where: { id: userId },
       data: { passwordHash, mustChangePassword: false },

@@ -1,10 +1,8 @@
+import { IsEmail, IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
 import {
-  IsEmail,
-  IsNotEmpty,
-  IsString,
-  Matches,
-  MinLength,
-} from 'class-validator';
+  PASSWORD_POLICY_MESSAGE,
+  PASSWORD_POLICY_REGEX,
+} from '../../common/password';
 
 export class RegisterDto {
   @IsString()
@@ -16,10 +14,6 @@ export class RegisterDto {
 
   @IsString()
   @MinLength(8)
-  // Password policy: at least one lowercase letter, one uppercase letter, and one number.
-  @Matches(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
-    message:
-      'Password must include an uppercase letter, a lowercase letter, and a number',
-  })
+  @Matches(PASSWORD_POLICY_REGEX, { message: PASSWORD_POLICY_MESSAGE })
   password: string;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import toast from 'react-hot-toast';
 import styles from './Sidebar.module.css';
@@ -41,35 +41,26 @@ const ADMIN_NAV: NavItem[] = [
 export function Sidebar({ view, children }: { view: View; children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { role, setActiveRole, logout } = useAuth();
+  const { role, logout } = useAuth();
   const [open, setOpen] = useState(false);
 
   const title = view === 'admin' ? 'Admin' : 'User';
   const navItems = view === 'admin' ? ADMIN_NAV : USER_NAV;
 
-  // Keep the active role in sync with the view actually being rendered, so that an
-  // admin who lands in the user portal (via the switch, a reload, or a direct link)
-  // is consistently recorded as acting as USER.
-  useEffect(() => {
-    setActiveRole(view === 'admin' ? 'ADMIN' : 'USER');
-  }, [view, setActiveRole]);
-
   const handleRoleSwitch = () => {
     setOpen(false);
     // UI-only toggle (docs/01 §11). Backend stays authoritative; the switch-back
-    // gate uses the account `role`, never the active role, so an admin acting as a
-    // user can always return to the admin view.
+    // gate uses the account `role`, so an admin acting as a user can always return
+    // to the admin view.
     if (view === 'user') {
       // Switching to the Admin view: only a real ADMIN account may.
       if (role === 'ADMIN') {
-        setActiveRole('ADMIN');
         router.push('/admin');
       } else {
         toast.error("You don't have permission to access the Admin view");
       }
     } else {
       // Switching to the user view: any admin can drop into the user role.
-      setActiveRole('USER');
       router.push('/concerts');
     }
   };

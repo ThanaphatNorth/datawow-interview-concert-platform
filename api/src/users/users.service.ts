@@ -5,11 +5,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
+import { hashPassword, rethrowDuplicateEmail } from '../common/password';
 import { CreateAdminDto } from './dto/create-admin.dto';
-
-const SALT_ROUNDS = 10;
 
 // Fields safe to return to the client (never the password hash).
 const ADMIN_SELECT = {
@@ -39,7 +37,7 @@ export class UsersService {
    * flagged `mustChangePassword` so it must be reset on first login.
    */
   async createAdmin(dto: CreateAdminDto) {
-    const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
+    const passwordHash = await hashPassword(dto.password);
     try {
       return await this.prisma.user.create({
         data: {
@@ -52,13 +50,7 @@ export class UsersService {
         select: ADMIN_SELECT,
       });
     } catch (e) {
-      if (
-        e instanceof Prisma.PrismaClientKnownRequestError &&
-        e.code === 'P2002'
-      ) {
-        throw new ConflictException('Email already registered');
-      }
-      throw e;
+      rethrowDuplicateEmail(e);
     }
   }
 

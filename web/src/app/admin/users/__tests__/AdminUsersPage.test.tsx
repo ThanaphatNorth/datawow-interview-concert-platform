@@ -38,8 +38,6 @@ jest.mock('@/lib/auth', () => ({
     isReady: true,
     isAuthenticated: true,
     role: 'ADMIN',
-    activeRole: 'ADMIN',
-    setActiveRole: jest.fn(),
     user: { id: 'a1', name: 'Admin User', email: 'admin@example.com', role: 'ADMIN', mustChangePassword: false },
     logout: jest.fn(),
   }),
