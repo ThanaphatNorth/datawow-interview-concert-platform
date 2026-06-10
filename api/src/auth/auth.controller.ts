@@ -11,6 +11,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { Public } from './decorators/public.decorator';
+import { AllowPasswordChange } from './decorators/allow-password-change.decorator';
 import { CurrentUser, AuthUser } from './decorators/current-user.decorator';
 
 @Controller('auth')
@@ -31,12 +32,16 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
+  // Reading one's own profile is always allowed, even before the password change.
+  @AllowPasswordChange()
   @Get('me')
   me(@CurrentUser() user: AuthUser) {
     return this.authService.getProfile(user.id);
   }
 
   // Authenticated (no @Public): the JWT identifies who is changing their password.
+  // Must stay reachable while mustChangePassword is set — it's the way to clear it.
+  @AllowPasswordChange()
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
   changePassword(
