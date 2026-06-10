@@ -150,4 +150,11 @@ export class ApiClient {
       data,
     });
   }
+
+  /** Raw DELETE so specs can assert status codes / clean up provisioned rows. */
+  async rawDelete(path: string, token: string) {
+    return this.ctx.delete(path, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  }
 }
