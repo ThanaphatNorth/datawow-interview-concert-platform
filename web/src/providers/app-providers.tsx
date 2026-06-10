@@ -4,11 +4,13 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { AuthContext, type AuthContextValue } from './auth-context';
-import type { AuthUser } from '@/lib/types';
+import type { AuthUser, Role } from '@/lib/types';
 import { clearSession, getStoredUser, getToken, storeSession, TOKEN_KEY } from '@/lib/auth';
 
 function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  // The role the user is acting as in the UI; defaults to the account role.
+  const [activeRole, setActiveRole] = useState<Role | null>(null);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -16,6 +18,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
     const storedUser = getStoredUser();
     if (token && storedUser) {
       setUser(storedUser);
+      setActiveRole(storedUser.role);
     }
     setIsReady(true);
 
@@ -23,6 +26,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
     const onStorage = (e: StorageEvent) => {
       if (e.key === TOKEN_KEY && !e.newValue) {
         setUser(null);
+        setActiveRole(null);
       }
     };
     window.addEventListener('storage', onStorage);
@@ -33,18 +37,27 @@ function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       role: user?.role ?? null,
+      activeRole,
+      setActiveRole,
       isAuthenticated: !!user,
       isReady,
       login: (token, nextUser) => {
         storeSession(token, nextUser);
         setUser(nextUser);
+        setActiveRole(nextUser.role);
+      },
+      updateUser: (nextUser) => {
+        const token = getToken();
+        if (token) storeSession(token, nextUser);
+        setUser(nextUser);
       },
       logout: () => {
         clearSession();
         setUser(null);
+        setActiveRole(null);
       },
     }),
-    [user, isReady],
+    [user, activeRole, isReady],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

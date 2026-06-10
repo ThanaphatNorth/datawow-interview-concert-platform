@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import toast from 'react-hot-toast';
 import styles from './Sidebar.module.css';
@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth';
 import {
   HomeIcon,
   HistoryIcon,
+  AdminIcon,
   SwitchIcon,
   LogoutIcon,
   MenuIcon,
@@ -29,28 +30,46 @@ const USER_NAV: NavItem[] = [
 const ADMIN_NAV: NavItem[] = [
   { label: 'Home', href: '/admin', icon: <HomeIcon />, testId: 'nav-home' },
   { label: 'History', href: '/admin/history', icon: <HistoryIcon />, testId: 'nav-history' },
+  {
+    label: 'Admin Management',
+    href: '/admin/users',
+    icon: <AdminIcon />,
+    testId: 'nav-admins',
+  },
 ];
 
 export function Sidebar({ view, children }: { view: View; children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { role, logout } = useAuth();
+  const { role, setActiveRole, logout } = useAuth();
   const [open, setOpen] = useState(false);
 
   const title = view === 'admin' ? 'Admin' : 'User';
   const navItems = view === 'admin' ? ADMIN_NAV : USER_NAV;
 
+  // Keep the active role in sync with the view actually being rendered, so that an
+  // admin who lands in the user portal (via the switch, a reload, or a direct link)
+  // is consistently recorded as acting as USER.
+  useEffect(() => {
+    setActiveRole(view === 'admin' ? 'ADMIN' : 'USER');
+  }, [view, setActiveRole]);
+
   const handleRoleSwitch = () => {
     setOpen(false);
-    // UI-only toggle (docs/01 §11). Backend stays authoritative; if the JWT role
-    // doesn't permit the target view, the API returns 403 and we toast.
+    // UI-only toggle (docs/01 §11). Backend stays authoritative; the switch-back
+    // gate uses the account `role`, never the active role, so an admin acting as a
+    // user can always return to the admin view.
     if (view === 'user') {
+      // Switching to the Admin view: only a real ADMIN account may.
       if (role === 'ADMIN') {
+        setActiveRole('ADMIN');
         router.push('/admin');
       } else {
-        toast.error('Log in as an administrator to access the Admin view');
+        toast.error("You don't have permission to access the Admin view");
       }
     } else {
+      // Switching to the user view: any admin can drop into the user role.
+      setActiveRole('USER');
       router.push('/concerts');
     }
   };

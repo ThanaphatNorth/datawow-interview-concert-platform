@@ -24,11 +24,17 @@ export function LoginForm({
   submitLabel,
   quote,
   showRegister = true,
+  requireAdmin = false,
 }: {
   submitLabel: string;
   quote?: string;
   /** Admins are seeded (no self-registration), so the admin login hides this. */
   showRegister?: boolean;
+  /**
+   * Administrator login: only ADMIN accounts may enter here. A non-admin who
+   * authenticates is rejected without a session — they must use the user login.
+   */
+  requireAdmin?: boolean;
 }) {
   const router = useRouter();
   const { login } = useAuth();
@@ -46,7 +52,18 @@ export function LoginForm({
   const onSubmit = (values: LoginInput) => {
     mutation.mutate(values, {
       onSuccess: (res) => {
+        if (requireAdmin && res.user.role !== 'ADMIN') {
+          // Non-admin used the administrator login: reject without establishing a
+          // session. They keep their (user) account and must log in as a user.
+          setError('root', { message: 'This account does not have administrator access' });
+          return;
+        }
         login(res.accessToken, res.user);
+        if (res.user.mustChangePassword) {
+          // Provisioned admin's first login: set a new password before entering.
+          router.replace('/change-password');
+          return;
+        }
         toast.success('Welcome back');
         router.replace(res.user.role === 'ADMIN' ? '/admin' : '/concerts');
       },
@@ -64,9 +81,9 @@ export function LoginForm({
     <SplitPanel quote={quote}>
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-6">
         <h1 className="text-center text-4xl font-bold">Login</h1>
-        {errors.password?.message === 'Invalid email or password' && (
+        {(errors.root?.message || errors.password?.message === 'Invalid email or password') && (
           <p data-testid="auth-error" className="text-center text-sm text-danger">
-            Invalid email or password
+            {errors.root?.message ?? 'Invalid email or password'}
           </p>
         )}
         <Input
