@@ -28,8 +28,25 @@ async function main() {
     },
   });
 
+  // A freshly provisioned admin: logs in with the temporary password, then is
+  // forced to set a new one on first login. Reset on every seed so the
+  // first-login flow is reproducible (idempotent demo state).
+  await prisma.user.upsert({
+    where: { email: 'new-admin@example.com' },
+    update: { passwordHash, mustChangePassword: true },
+    create: {
+      email: 'new-admin@example.com',
+      name: 'New Admin',
+      passwordHash,
+      role: Role.ADMIN,
+      mustChangePassword: true,
+    },
+  });
+
   // eslint-disable-next-line no-console
-  console.log('Seed complete: admin@example.com / user@example.com (Password123)');
+  console.log(
+    'Seed complete: admin@example.com / user@example.com / new-admin@example.com (Password123)',
+  );
 }
 
 main()
